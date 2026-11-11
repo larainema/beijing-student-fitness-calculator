@@ -1,0 +1,59 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero">
+    <image class="avatar" src="{{avatar}}" mode="aspectFill" />
+    <view class="hero-copy">
+      <text class="eyebrow">BEIJING FITNESS</text>
+      <text class="title">北京体测成绩助手</text>
+      <text class="intro">{{appIntro}}</text>
+    </view>
+  </view>
+
+  <view class="privacy-note">成绩仅在当前设备计算；基础计算不会上传至服务器。</view>
+
+  <view class="card selector-card">
+    <text class="section-label">统测年级</text>
+    <view class="segmented">
+      <view wx:for="{{grades}}" wx:key="key" class="segment {{grade === item.key ? 'active' : ''}}" data-grade="{{item.key}}" bindtap="onGradeTap">{{item.label}}</view>
+    </view>
+    <text class="section-label second-label">性别</text>
+    <view class="segmented short">
+      <view wx:for="{{sexes}}" wx:key="key" class="segment {{sex === item.key ? 'active' : ''}}" data-sex="{{item.key}}" bindtap="onSexTap">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-heading"><text>01</text><view><text class="heading-title">身体形态</text><text class="heading-help">身高、体重将自动换算 BMI</text></view></view>
+    <view class="field-grid">
+      <view class="field"><text>身高</text><input data-key="height" value="{{values.height}}" type="digit" placeholder="例如 168" bindinput="onFieldInput" /><text class="unit">cm</text></view>
+      <view class="field"><text>体重</text><input data-key="weight" value="{{values.weight}}" type="digit" placeholder="例如 55" bindinput="onFieldInput" /><text class="unit">kg</text></view>
+    </view>
+    <view class="bmi"><text>BMI（体重 ÷ 身高²）</text><text>{{result.complete ? result.bmiText : '等待输入'}}</text></view>
+  </view>
+
+  <view class="card">
+    <view class="section-heading"><text>02</text><view><text class="heading-title">身体机能与运动素质</text><text class="heading-help">按本次测试的有效成绩填写</text></view></view>
+    <view class="field-grid">
+      <view wx:for="{{formItems}}" wx:key="key" class="field">
+        <text>{{item.label}}</text><text class="field-help">{{item.help}}</text>
+        <input data-key="{{item.key}}" value="{{values[item.key]}}" placeholder="{{item.placeholder}}" bindinput="onFieldInput" />
+        <text class="unit">{{item.unit}}</text>
+      </view>
+    </view>
+    <view wx:if="{{grade === '8'}}" class="knowledge">
+      <view><text class="knowledge-title">体育与健康知识机考（可选）</text><text class="knowledge-help">八年级下学期进行，可同时估算过程性考核。</text></view>
+      <view class="knowledge-input"><input data-key="knowledge" value="{{values.knowledge}}" type="digit" placeholder="0–100" bindinput="onFieldInput" /><text>分</text></view>
+    </view>
+    <view class="actions"><button class="ghost" bindtap="useSample">填入示例</button><button class="ghost" bindtap="clearValues">清空成绩</button></view>
+  </view>
+
+  <view class="result-card">
+    <view class="result-top"><text class="result-kicker">体测统测成绩</text><view class="score-line"><text>{{result.complete ? result.converted : '—'}}</text><text>/ 10 分</text></view><text>{{result.complete ? result.category : '完成所有必测项目后自动计算'}}</text></view>
+    <view wx:if="{{result.complete}}" class="result-body">
+      <view class="stats"><view><text>国标标准分</text><text class="stat-number">{{result.standardText}}</text><text class="stat-hint">/ 100 分</text></view><view><text>附加分</text><text class="stat-number">{{result.bonusText}}</text><text class="stat-hint">/ 20 分</text></view><view><text>国标测试总分</text><text class="stat-number">{{result.nationalText}}</text><text class="stat-hint">/ 120 分</text></view><view wx:if="{{result.hasProcess}}"><text>八年级过程考核</text><text class="stat-number">{{result.processText}}</text><text class="stat-hint">/ 20 分</text></view></view>
+      <view wx:if="{{reportUnlocked}}" class="detail-list"><text class="detail-title">单项得分与加权贡献</text><view wx:for="{{result.detailItems}}" wx:key="key" class="detail-row"><text>{{item.label}} · {{item.raw}}</text><text>{{item.score}} / 100</text><text>{{item.contributionText}} 分</text></view></view>
+      <view wx:else class="report-gate"><text class="gate-title">解锁完整成绩报告</text><text class="gate-copy">含每项得分、加权贡献与提升重点。每份报告 ¥1。</text><button class="pay-button" loading="{{loadingPayment}}" bindtap="unlockReport">{{paymentEnabled ? '支付 ¥1 解锁' : '报告服务准备中'}}</button></view>
+    </view>
+  </view>
+
+  <view class="footer">仅供个人估算，正式成绩以学校或区级统测记录为准。</view>
+</scroll-view>
