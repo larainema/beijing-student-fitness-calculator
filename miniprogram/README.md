@@ -36,3 +36,14 @@
 ```bash
 node --check miniprogram/utils/fitness.js
 ```
+
+## CI 上传工具
+
+项目将微信官方 `miniprogram-ci` 锁定为本地开发依赖。安装后可验证命令：
+
+```bash
+npm install
+npm run ci -- --help
+```
+
+通过 CI 上传体验版或正式版时，需要从微信公众平台生成上传密钥。密钥文件不得提交、不得发送到聊天中；本目录的 `.gitignore` 已忽略常见私钥文件名。具体参数以[微信小程序 CI 文档](https://developers.weixin.qq.com/miniprogram/dev/devtools/ci.html)为准。

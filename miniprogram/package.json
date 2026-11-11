@@ -1,0 +1,12 @@
+{
+  "name": "beijing-fitness-score-assistant-miniprogram",
+  "version": "0.1.0",
+  "private": true,
+  "description": "北京体测成绩助手的微信小程序与 CI 发布工具",
+  "scripts": {
+    "ci": "miniprogram-ci"
+  },
+  "devDependencies": {
+    "miniprogram-ci": "^2.1.31"
+  }
+}
