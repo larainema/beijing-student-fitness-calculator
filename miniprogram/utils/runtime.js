@@ -9,7 +9,7 @@ module.exports = {
   cloudEnv: 'tiqi-fitness-prod-d3dcyb8e5fd44c',
   // A detailed report is a digital service. Enable only after the Mini Program
   // virtual-payment product, CloudBase secrets and delivery callback are live.
-  paymentEnabled: false,
+  paymentEnabled: true,
   paymentMode: 'virtual-payment',
   // Created and managed by CloudBase Integration Center. Its generated name
   // is bound to the callback domain, so it must not be renamed in the console.
