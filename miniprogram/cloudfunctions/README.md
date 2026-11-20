@@ -18,6 +18,7 @@
    VIRTUAL_PAY_APP_KEY=虚拟支付现网 AppKey
    VIRTUAL_PAY_OFFER_ID=虚拟支付 OfferID
    VIRTUAL_REPORT_PRODUCT_ID=已发布道具的 ProductID
+   VIRTUAL_PAY_ENV=0
    ```
 
 4. 部署 `createReportOrder`、`claimReport` 与 `payCallback`。为 `payCallback` 配置虚拟
@@ -26,6 +27,11 @@
    查单兜底、报告解锁和退款通知。
 6. 最后才将 [`utils/runtime.js`](../utils/runtime.js) 中的 `paymentEnabled` 改为 `true`，
    上传新的体验版并重新提审。
+
+`VIRTUAL_PAY_ENV=0` 表示正式环境，且必须配套现网 AppKey；仅在开发者工具内调试时才可
+临时改为 `1` 并换成沙箱 AppKey。沙箱不能用于真机预览或正式发布。`createReportOrder`
+需要全部变量，`claimReport` 需要 `VIRTUAL_PAYMENT_ENABLED`、`WECHAT_APP_ID`、
+`WECHAT_APP_SECRET`、`VIRTUAL_PAY_APP_KEY` 与 `VIRTUAL_PAY_ENV`，`payCallback` 不需要密钥。
 
 ## 订单与发货原则
 

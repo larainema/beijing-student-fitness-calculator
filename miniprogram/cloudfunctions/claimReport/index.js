@@ -41,11 +41,13 @@ function paymentConfig(appId) {
   const configuredAppId = process.env.WECHAT_APP_ID
   const appSecret = process.env.WECHAT_APP_SECRET
   const appKey = process.env.VIRTUAL_PAY_APP_KEY
+  const paymentEnv = Number(process.env.VIRTUAL_PAY_ENV || '0')
   if (process.env.VIRTUAL_PAYMENT_ENABLED !== 'true' || !configuredAppId || !appSecret || !appKey) {
     throw new Error('VIRTUAL_PAYMENT_NOT_CONFIGURED')
   }
   if (configuredAppId !== appId) throw new Error('APPID_CONFIGURATION_MISMATCH')
-  return { configuredAppId, appSecret, appKey }
+  if (paymentEnv !== 0 && paymentEnv !== 1) throw new Error('VIRTUAL_PAYMENT_ENV_INVALID')
+  return { configuredAppId, appSecret, appKey, paymentEnv }
 }
 
 async function accessToken(config) {
@@ -81,7 +83,7 @@ exports.main = async event => {
   if (order.status === 'refunded') return { entitled: false, refunded: true }
 
   const config = paymentConfig(APPID)
-  const queryBody = { openid: OPENID, env: 0, order_id: outTradeNo }
+  const queryBody = { openid: OPENID, env: config.paymentEnv, order_id: outTradeNo }
   const bodyText = JSON.stringify(queryBody)
   const token = await accessToken(config)
   const paySig = hmacSha256(config.appKey, `/xpay/query_order&${bodyText}`)

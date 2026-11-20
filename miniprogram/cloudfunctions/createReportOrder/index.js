@@ -66,11 +66,13 @@ function virtualPaymentConfig(appId) {
   const productId = process.env.VIRTUAL_REPORT_PRODUCT_ID
   const appSecret = process.env.WECHAT_APP_SECRET
   const configuredAppId = process.env.WECHAT_APP_ID
+  const paymentEnv = Number(process.env.VIRTUAL_PAY_ENV || '0')
   if (!enabled || !appKey || !offerId || !productId || !appSecret || !configuredAppId) {
     throw new Error('VIRTUAL_PAYMENT_NOT_CONFIGURED')
   }
   if (configuredAppId !== appId) throw new Error('APPID_CONFIGURATION_MISMATCH')
-  return { appKey, offerId, productId, appSecret }
+  if (paymentEnv !== 0 && paymentEnv !== 1) throw new Error('VIRTUAL_PAYMENT_ENV_INVALID')
+  return { appKey, offerId, productId, appSecret, paymentEnv }
 }
 
 exports.main = async event => {
@@ -93,7 +95,7 @@ exports.main = async event => {
   const signData = JSON.stringify({
     offerId: config.offerId,
     buyQuantity: 1,
-    env: 0,
+    env: config.paymentEnv,
     currencyType: 'CNY',
     productId: config.productId,
     goodsPrice: product.priceFen,
@@ -110,6 +112,7 @@ exports.main = async event => {
       amountFen: product.priceFen,
       title: product.title,
       paymentChannel: 'virtual-payment',
+      paymentEnvironment: config.paymentEnv,
       status: 'pending',
       createdAt: db.serverDate()
     }
