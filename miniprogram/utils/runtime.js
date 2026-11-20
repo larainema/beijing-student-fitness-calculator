@@ -6,7 +6,7 @@
  * or personal data in this file or in the mini-program bundle.
  */
 module.exports = {
-  cloudEnv: '',
+  cloudEnv: 'tiqi-fitness-prod-d3dcyb8e5fd44c',
   // A detailed report is a digital service. Enable only after the Mini Program
   // virtual-payment product, CloudBase secrets and delivery callback are live.
   paymentEnabled: false,
