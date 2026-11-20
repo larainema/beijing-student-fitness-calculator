@@ -1,6 +1,7 @@
 const { calculate, formItems } = require('../../utils/fitness')
 const { buildReport } = require('../../utils/report')
 const runtime = require('../../utils/runtime')
+const { callXpay } = require('../../utils/xpay')
 
 const emptyValues = () => ({
   height: '', weight: '', vital: '', sprint: '', flexibility: '', rope: '',
@@ -187,31 +188,59 @@ Page({
           wx.showToast({ title: '无法创建支付会话，请重试', icon: 'none' })
           return
         }
-        wx.cloud.callFunction({
-          name: 'createReportOrder',
-          data: { productCode: runtime.productCode, loginCode: loginResult.code },
-          success: response => {
-            const { payment, outTradeNo } = response.result || {}
-            if (!payment || !outTradeNo) {
-              this.setData({ loadingPayment: false })
-              wx.showToast({ title: '支付参数不完整，请稍后重试', icon: 'none' })
-              return
-            }
-            this.setData({ pendingOrderNo: outTradeNo })
-            wx.requestVirtualPayment({
-              ...payment,
-              success: () => this.claimReport(outTradeNo),
-              fail: error => {
-                this.setData({ loadingPayment: false })
-                const cancelled = /cancel/i.test(error.errMsg || '')
-                wx.showToast({ title: cancelled ? '已取消支付' : '支付未完成', icon: 'none' })
-              }
-            })
-          },
-          fail: error => {
+        // The integration function creates exactly the payment signatures.
+        // It does not unlock a report: the normal cloud function below first
+        // records a server-verified order, then claimReport verifies payment.
+        callXpay('/xpay/create_order', {
+          code: loginResult.code,
+          productId: runtime.productId,
+          goodsPrice: runtime.priceFen,
+          buyQuantity: 1
+        }).then(xpayResponse => {
+          if (!xpayResponse || xpayResponse.code !== 0 || !xpayResponse.data) {
             this.setData({ loadingPayment: false })
-            wx.showToast({ title: error.errMsg || '暂时无法创建订单', icon: 'none' })
+            wx.showToast({ title: (xpayResponse && xpayResponse.msg) || '暂时无法创建订单', icon: 'none' })
+            return
           }
+          const payment = xpayResponse.data
+          wx.cloud.callFunction({
+            name: 'createReportOrder',
+            data: {
+              productCode: runtime.productCode,
+              signData: payment.signData,
+              paySig: payment.paySig
+            },
+            success: response => {
+              const { outTradeNo } = response.result || {}
+              if (!outTradeNo) {
+                this.setData({ loadingPayment: false })
+                wx.showToast({ title: '订单登记失败，请稍后重试', icon: 'none' })
+                return
+              }
+              this.setData({ pendingOrderNo: outTradeNo })
+              // Do not parse and stringify signData: its original byte order
+              // is part of the payment signature.
+              wx.requestVirtualPayment({
+                signData: payment.signData,
+                paySig: payment.paySig,
+                signature: payment.signature,
+                mode: payment.mode,
+                success: () => this.claimReport(outTradeNo),
+                fail: error => {
+                  this.setData({ loadingPayment: false })
+                  const cancelled = /cancel/i.test(error.errMsg || '')
+                  wx.showToast({ title: cancelled ? '已取消支付' : '支付未完成', icon: 'none' })
+                }
+              })
+            },
+            fail: error => {
+              this.setData({ loadingPayment: false })
+              wx.showToast({ title: error.errMsg || '订单登记失败，请稍后重试', icon: 'none' })
+            }
+          })
+        }).catch(error => {
+          this.setData({ loadingPayment: false })
+          wx.showToast({ title: error.message || '暂时无法创建订单', icon: 'none' })
         })
       },
       fail: () => {

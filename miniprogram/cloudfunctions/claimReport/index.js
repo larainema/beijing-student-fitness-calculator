@@ -72,7 +72,10 @@ async function deliverOrder(order) {
 
 exports.main = async event => {
   const outTradeNo = String(event.outTradeNo || '')
-  if (!/^FIT[A-Z0-9]{16,29}$/.test(outTradeNo)) throw new Error('ORDER_NUMBER_INVALID')
+  // CloudBase Integration Center assigns the payment order number. Accept its
+  // documented opaque identifier format, while keeping a strict length and
+  // character allow-list before using it in database or platform requests.
+  if (!/^[A-Za-z0-9_-]{8,128}$/.test(outTradeNo)) throw new Error('ORDER_NUMBER_INVALID')
   const { OPENID, APPID } = cloud.getWXContext()
   if (!OPENID || !APPID) throw new Error('USER_CONTEXT_UNAVAILABLE')
 

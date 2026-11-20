@@ -11,7 +11,11 @@ module.exports = {
   // virtual-payment product, CloudBase secrets and delivery callback are live.
   paymentEnabled: false,
   paymentMode: 'virtual-payment',
+  // Created and managed by CloudBase Integration Center. Its generated name
+  // is bound to the callback domain, so it must not be renamed in the console.
+  virtualPaymentFunction: 'tiqi-virtual-payment-e70w07es-demo-scfweb',
   productCode: 'fitness-detail-report-v2',
+  productId: 'fitness_detail',
   priceFen: 100,
   minBaseLibrary: '4.4.8'
 }

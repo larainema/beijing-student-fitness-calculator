@@ -23,7 +23,7 @@
 1. 在微信公众平台完成小程序认证、备案、工具类目和虚拟支付能力开通。
 2. 在微信开发者工具开通 CloudBase 环境，并将环境 ID 填入 `utils/runtime.js` 的 `cloudEnv`。
 3. 在 CloudBase 数据库创建 `fitness_orders` 集合，禁止客户端直接读写订单。
-4. 依照 [`cloudfunctions/README.md`](cloudfunctions/README.md) 创建价格为 1 元的虚拟支付道具，配置密钥、部署云函数并设置发货通知。
+4. 依照 [`cloudfunctions/README.md`](cloudfunctions/README.md) 创建价格为 1 元的虚拟支付道具，在 CloudBase 集成中心创建虚拟支付集成，部署业务云函数并验证发货推送。
 5. 测试真实的小额订单、支付回调、查单兜底和售后流程后，才将 `utils/runtime.js` 的 `paymentEnabled` 改为 `true`，重新提审小程序。
 
 ## 隐私边界
