@@ -1,6 +1,6 @@
 {
   "name": "beijing-fitness-score-assistant-miniprogram",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "缇杞体测微信小程序与 CI 发布工具",
   "scripts": {
