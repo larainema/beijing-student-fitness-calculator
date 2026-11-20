@@ -1,0 +1,17 @@
+<scroll-view class="page" scroll-y refresher-enabled="true" bindrefresherrefresh="onPullDownRefresh">
+  <view class="hero"><text>订单中心</text><text>仅展示当前微信账号的详细成绩报告订单。</text></view>
+  <view wx:if="{{loading}}" class="empty">正在加载订单…</view>
+  <block wx:elif="{{orders.length}}">
+    <view wx:for="{{orders}}" wx:key="outTradeNo" class="order-card">
+      <view class="order-top"><text class="order-title">{{item.title || '详细成绩报告（单次）'}}</text><text class="status status-{{item.status}}">{{item.statusText}}</text></view>
+      <view class="row"><text>实付金额</text><text class="price">{{item.amountText}}</text></view>
+      <view class="row"><text>下单时间</text><text>{{item.createdText || '处理中'}}</text></view>
+      <view class="row"><text>订单号</text><text>…{{item.orderSuffix}}</text></view>
+      <text wx:if="{{item.status === 'delivered'}}" class="hint">报告已在支付时对应的本次会话中交付。</text>
+      <text wx:elif="{{item.status === 'refunded'}}" class="hint">该订单已退款，不再提供报告权益。</text>
+      <text wx:else class="hint">支付后若状态未更新，请下拉刷新或联系商家客服。</text>
+    </view>
+  </block>
+  <view wx:else class="empty"><text>暂无订单</text><text>完成一次详细成绩报告支付后，会在这里显示订单状态。</text></view>
+  <navigator class="service-link" url="/pages/service/service">查看服务说明与售后方式</navigator>
+</scroll-view>

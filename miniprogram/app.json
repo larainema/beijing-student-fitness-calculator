@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/index/index", "pages/report/report", "pages/service/service"],
+  "pages": ["pages/index/index", "pages/report/report", "pages/service/service", "pages/orders/index"],
   "window": {
     "navigationBarTitleText": "缇杞体测",
     "navigationBarBackgroundColor": "#168ee8",
