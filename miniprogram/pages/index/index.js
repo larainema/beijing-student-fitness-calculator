@@ -1,4 +1,5 @@
 const { calculate, formItems } = require('../../utils/fitness')
+const { buildReport } = require('../../utils/report')
 const runtime = require('../../utils/runtime')
 
 const emptyValues = () => ({
@@ -38,7 +39,7 @@ function toViewResult(calculation, grade) {
 Page({
   data: {
     appIntro: '北京四、六、八年级学生体测成绩估算工具，支持男女生项目、附加分与统测折算。',
-    avatar: '/assets/avatar.png',
+    avatar: '/assets/avatar.jpg',
     grade: '8',
     sex: 'male',
     grades: [{ key: '4', label: '四年级' }, { key: '6', label: '六年级' }, { key: '8', label: '八年级' }],
@@ -47,33 +48,62 @@ Page({
     formItems: formItems('8', 'male'),
     result: { complete: false },
     paymentEnabled: runtime.paymentEnabled,
+    virtualPaymentSupported: false,
     reportUnlocked: false,
+    termsAccepted: false,
+    pendingOrderNo: '',
     loadingPayment: false
   },
 
   onLoad() {
+    this.setData({ virtualPaymentSupported: typeof wx.requestVirtualPayment === 'function' })
     this.refreshCalculation()
   },
 
   onGradeTap(event) {
-    this.setData({ grade: event.currentTarget.dataset.grade, reportUnlocked: false }, () => this.refreshCalculation())
+    this.setData({
+      grade: event.currentTarget.dataset.grade,
+      reportUnlocked: false,
+      termsAccepted: false,
+      pendingOrderNo: ''
+    }, () => this.refreshCalculation())
   },
 
   onSexTap(event) {
-    this.setData({ sex: event.currentTarget.dataset.sex, reportUnlocked: false }, () => this.refreshCalculation())
+    this.setData({
+      sex: event.currentTarget.dataset.sex,
+      reportUnlocked: false,
+      termsAccepted: false,
+      pendingOrderNo: ''
+    }, () => this.refreshCalculation())
   },
 
   onFieldInput(event) {
     const key = event.currentTarget.dataset.key
-    this.setData({ [`values.${key}`]: event.detail.value, reportUnlocked: false }, () => this.refreshCalculation())
+    this.setData({
+      [`values.${key}`]: event.detail.value,
+      reportUnlocked: false,
+      termsAccepted: false,
+      pendingOrderNo: ''
+    }, () => this.refreshCalculation())
   },
 
   useSample() {
-    this.setData({ values: { ...emptyValues(), ...samples[this.data.grade][this.data.sex] }, reportUnlocked: false }, () => this.refreshCalculation())
+    this.setData({
+      values: { ...emptyValues(), ...samples[this.data.grade][this.data.sex] },
+      reportUnlocked: false,
+      termsAccepted: false,
+      pendingOrderNo: ''
+    }, () => this.refreshCalculation())
   },
 
   clearValues() {
-    this.setData({ values: emptyValues(), reportUnlocked: false }, () => this.refreshCalculation())
+    this.setData({
+      values: emptyValues(),
+      reportUnlocked: false,
+      termsAccepted: false,
+      pendingOrderNo: ''
+    }, () => this.refreshCalculation())
   },
 
   refreshCalculation() {
@@ -82,40 +112,111 @@ Page({
     this.setData({ formItems: formItems(grade, sex), result })
   },
 
+  prepareReportDraft() {
+    const calculation = calculate({
+      grade: this.data.grade,
+      sex: this.data.sex,
+      values: this.data.values
+    })
+    if (!calculation.complete) throw new Error('INCOMPLETE_CALCULATION')
+    const report = buildReport({ grade: this.data.grade, sex: this.data.sex, calculation })
+    getApp().globalData.reportDraft = report
+    return report
+  },
+
+  toggleTerms() {
+    this.setData({ termsAccepted: !this.data.termsAccepted })
+  },
+
+  openServiceTerms() {
+    wx.navigateTo({ url: '/pages/service/service' })
+  },
+
+  openDetailedReport() {
+    try {
+      this.prepareReportDraft()
+      wx.navigateTo({ url: '/pages/report/report' })
+    } catch (error) {
+      wx.showToast({ title: '请先完成全部必测项目', icon: 'none' })
+    }
+  },
+
   unlockReport() {
     if (!this.data.result.complete) {
       wx.showToast({ title: '请先完成本年级全部统测项目', icon: 'none' })
       return
     }
+    if (this.data.reportUnlocked) {
+      this.openDetailedReport()
+      return
+    }
+    if (!this.data.termsAccepted) {
+      wx.showToast({ title: '请先阅读并同意服务说明', icon: 'none' })
+      return
+    }
+    this.prepareReportDraft()
+    if (this.data.pendingOrderNo) {
+      this.claimReport(this.data.pendingOrderNo)
+      return
+    }
     if (!this.data.paymentEnabled) {
       wx.showModal({
         title: '付费报告准备中',
-        content: '基础成绩计算全程在本机完成。待商户号、支付产品和云开发环境绑定完成后，可支付 1 元解锁完整报告。',
+        content: '基础成绩计算全程在本机完成。待虚拟支付道具、云开发环境和发货回调配置完成后，方可支付 1 元解锁详细报告。',
         showCancel: false
       })
       return
     }
-    this.createPayment()
+    if (!this.data.virtualPaymentSupported) {
+      wx.showModal({
+        title: '请升级微信',
+        content: `当前微信版本不支持虚拟支付，请升级到支持该能力的版本后重试。`,
+        showCancel: false
+      })
+      return
+    }
+    this.createVirtualPayment()
   },
 
-  createPayment() {
+  createVirtualPayment() {
     this.setData({ loadingPayment: true })
-    wx.cloud.callFunction({
-      name: 'createReportOrder',
-      data: { productCode: runtime.productCode },
-      success: response => {
-        const { payment, outTradeNo } = response.result || {}
-        if (!payment || !outTradeNo) throw new Error('支付参数不完整')
-        wx.requestPayment({
-          ...payment,
-          success: () => this.claimReport(outTradeNo),
-          fail: () => wx.showToast({ title: '支付未完成', icon: 'none' }),
-          complete: () => this.setData({ loadingPayment: false })
+    wx.login({
+      success: loginResult => {
+        if (!loginResult.code) {
+          this.setData({ loadingPayment: false })
+          wx.showToast({ title: '无法创建支付会话，请重试', icon: 'none' })
+          return
+        }
+        wx.cloud.callFunction({
+          name: 'createReportOrder',
+          data: { productCode: runtime.productCode, loginCode: loginResult.code },
+          success: response => {
+            const { payment, outTradeNo } = response.result || {}
+            if (!payment || !outTradeNo) {
+              this.setData({ loadingPayment: false })
+              wx.showToast({ title: '支付参数不完整，请稍后重试', icon: 'none' })
+              return
+            }
+            this.setData({ pendingOrderNo: outTradeNo })
+            wx.requestVirtualPayment({
+              ...payment,
+              success: () => this.claimReport(outTradeNo),
+              fail: error => {
+                this.setData({ loadingPayment: false })
+                const cancelled = /cancel/i.test(error.errMsg || '')
+                wx.showToast({ title: cancelled ? '已取消支付' : '支付未完成', icon: 'none' })
+              }
+            })
+          },
+          fail: error => {
+            this.setData({ loadingPayment: false })
+            wx.showToast({ title: error.errMsg || '暂时无法创建订单', icon: 'none' })
+          }
         })
       },
-      fail: error => {
+      fail: () => {
         this.setData({ loadingPayment: false })
-        wx.showToast({ title: error.errMsg || '暂时无法创建订单', icon: 'none' })
+        wx.showToast({ title: '无法创建支付会话，请重试', icon: 'none' })
       }
     })
   },
@@ -126,13 +227,18 @@ Page({
       data: { outTradeNo },
       success: response => {
         if (response.result && response.result.entitled) {
-          this.setData({ reportUnlocked: true })
+          this.setData({ reportUnlocked: true, pendingOrderNo: '', loadingPayment: false })
           wx.showToast({ title: '报告已解锁', icon: 'success' })
+          setTimeout(() => this.openDetailedReport(), 350)
         } else {
-          wx.showToast({ title: '正在确认支付，请稍后重试', icon: 'none' })
+          this.setData({ loadingPayment: false, pendingOrderNo: outTradeNo })
+          wx.showToast({ title: '正在确认支付，可稍后点击确认', icon: 'none' })
         }
       },
-      fail: () => wx.showToast({ title: '支付确认失败，请稍后重试', icon: 'none' })
+      fail: () => {
+        this.setData({ loadingPayment: false, pendingOrderNo: outTradeNo })
+        wx.showToast({ title: '支付确认失败，可稍后重试', icon: 'none' })
+      }
     })
   }
 })

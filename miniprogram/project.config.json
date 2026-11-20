@@ -1,7 +1,14 @@
 {
-  "description": "北京体测成绩助手",
+  "description": "缇杞体测",
   "packOptions": {
-    "ignore": []
+    "ignore": [
+      { "type": "folder", "value": "node_modules" },
+      { "type": "folder", "value": "tests" },
+      { "type": "folder", "value": "cloudfunctions" },
+      { "type": "file", "value": "package.json" },
+      { "type": "file", "value": "package-lock.json" },
+      { "type": "file", "value": "README.md" }
+    ]
   },
   "setting": {
     "urlCheck": true,
@@ -9,12 +16,14 @@
     "enhance": true,
     "postcss": true,
     "minified": true,
+    "minifyWXML": true,
+    "minifyWXSS": true,
     "compileHotReLoad": true
   },
   "compileType": "miniprogram",
-  "libVersion": "3.7.6",
+  "libVersion": "4.4.8",
   "appid": "wx21df37352e34d7e5",
-  "projectname": "beijing-fitness-score-assistant",
+  "projectname": "tiqi-fitness-score-assistant",
   "cloudfunctionRoot": "cloudfunctions",
   "miniprogramRoot": "./"
 }

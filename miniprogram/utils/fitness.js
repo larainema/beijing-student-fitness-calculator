@@ -179,6 +179,38 @@ function itemLabel(key, sexData) {
   return ITEM_META[key].label
 }
 
+function nextScoreTarget({ grade, sex, item }) {
+  const gradeData = GRADES[grade]
+  const sexData = gradeData.sex[sex]
+  if (item.key === 'bmi') {
+    const [minimum, maximum] = sexData.bmi.normal
+    return item.score === 100
+      ? { reached: true, targetScore: 100, text: `BMI 保持在 ${minimum}–${maximum}` }
+      : { reached: false, targetScore: 100, text: `BMI 调整至 ${minimum}–${maximum}` }
+  }
+
+  const meta = ITEM_META[item.key]
+  const thresholds = meta.direction === 'higher' ? sexData.higher[item.key] : sexData.lower[item.key]
+  const levels = (sexData.levels && sexData.levels[item.key]) || LEVELS
+  if (item.score >= 100) return { reached: true, targetScore: 100, text: '已达到本项满分' }
+
+  const candidates = thresholds
+    .map((threshold, index) => ({ threshold, score: levels[index] }))
+    .filter(candidate => candidate.score > item.score)
+    .filter(candidate => meta.direction === 'higher'
+      ? candidate.threshold > item.value
+      : candidate.threshold < item.value)
+
+  if (!candidates.length) return { reached: false, targetScore: null, text: '保持稳定训练，争取提升一个评分档位' }
+
+  const target = meta.direction === 'higher'
+    ? candidates.reduce((closest, candidate) => candidate.threshold < closest.threshold ? candidate : closest)
+    : candidates.reduce((closest, candidate) => candidate.threshold > closest.threshold ? candidate : closest)
+  const targetValue = meta.time ? formatTime(target.threshold) : `${target.threshold} ${meta.unit}`
+  const action = meta.direction === 'higher' ? '达到' : '控制在'
+  return { reached: false, targetScore: target.score, text: `${action} ${targetValue}，本项可升至 ${target.score} 分` }
+}
+
 function formItems(grade, sex) {
   const gradeData = GRADES[grade]
   const sexData = gradeData.sex[sex]
@@ -209,13 +241,25 @@ function calculate({ grade, sex, values }) {
   if (!complete) return { complete: false, bmi, missing: required }
 
   const items = gradeData.items.map(key => {
-    if (key === 'bmi') return { key, label: 'BMI', raw: bmi.toFixed(1), score: scoreBmi(bmi, sexData.bmi) }
+    if (key === 'bmi') return {
+      key,
+      label: 'BMI',
+      raw: bmi.toFixed(1),
+      value: bmi,
+      score: scoreBmi(bmi, sexData.bmi)
+    }
     const meta = ITEM_META[key]
     const thresholds = meta.direction === 'higher' ? sexData.higher[key] : sexData.lower[key]
     const score = meta.direction === 'higher'
       ? scoreHigher(raw[key], thresholds, (sexData.levels && sexData.levels[key]) || LEVELS)
       : scoreLower(raw[key], thresholds)
-    return { key, label: itemLabel(key, sexData), raw: meta.time ? formatTime(raw[key]) : `${raw[key]} ${meta.unit}`, score }
+    return {
+      key,
+      label: itemLabel(key, sexData),
+      raw: meta.time ? formatTime(raw[key]) : `${raw[key]} ${meta.unit}`,
+      value: raw[key],
+      score
+    }
   })
 
   const standard = items.reduce((total, item) => total + item.score * gradeData.weights[item.key] / 100, 0)
@@ -242,4 +286,12 @@ function calculate({ grade, sex, values }) {
   }
 }
 
-module.exports = { GRADES, ITEM_META, calculate, formItems, parseTime, convertToBeijingScore }
+module.exports = {
+  GRADES,
+  ITEM_META,
+  calculate,
+  formItems,
+  parseTime,
+  convertToBeijingScore,
+  nextScoreTarget
+}

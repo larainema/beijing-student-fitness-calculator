@@ -7,7 +7,11 @@
  */
 module.exports = {
   cloudEnv: '',
+  // A detailed report is a digital service. Enable only after the Mini Program
+  // virtual-payment product, CloudBase secrets and delivery callback are live.
   paymentEnabled: false,
-  productCode: 'fitness-detail-report-v1',
-  priceFen: 100
+  paymentMode: 'virtual-payment',
+  productCode: 'fitness-detail-report-v2',
+  priceFen: 100,
+  minBaseLibrary: '4.4.8'
 }

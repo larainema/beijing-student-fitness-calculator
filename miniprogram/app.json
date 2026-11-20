@@ -1,12 +1,13 @@
 {
-  "pages": ["pages/index/index"],
+  "pages": ["pages/index/index", "pages/report/report", "pages/service/service"],
   "window": {
-    "navigationBarTitleText": "北京体测成绩助手",
-    "navigationBarBackgroundColor": "#0e7468",
+    "navigationBarTitleText": "缇杞体测",
+    "navigationBarBackgroundColor": "#168ee8",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#f7f7f2",
     "backgroundTextStyle": "light"
   },
   "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json"
 }

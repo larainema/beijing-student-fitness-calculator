@@ -1,0 +1,42 @@
+<scroll-view class="page" scroll-y wx:if="{{report}}">
+  <view class="hero">
+    <text class="eyebrow">TIQI FITNESS · DETAILED REPORT</text>
+    <text class="title">详细成绩报告</text>
+    <text class="subtitle">{{report.gradeLabel}} · {{report.sexLabel}} · 本次计算结果</text>
+    <view class="hero-score"><text>{{report.converted}}</text><text>/ 10 分</text></view>
+    <text class="category">{{report.category}}</text>
+  </view>
+
+  <view class="card">
+    <text class="section-title">成绩概览</text>
+    <view class="summary-grid">
+      <view><text>国标标准分</text><text>{{report.standardText}}</text><text>/ 100 分</text></view>
+      <view><text>附加分</text><text>{{report.bonusText}}</text><text>/ 20 分</text></view>
+      <view><text>国标测试总分</text><text>{{report.nationalText}}</text><text>/ 120 分</text></view>
+      <view><text>BMI</text><text>{{report.bmiText}}</text><text>体重 ÷ 身高²</text></view>
+    </view>
+    <view wx:if="{{report.hasProcess}}" class="process"><text>八年级过程性考核参考</text><text>{{report.processText}} / 20 分</text></view>
+  </view>
+
+  <view class="card">
+    <text class="section-title">优先提升方向</text>
+    <text class="section-copy">{{report.summary}}</text>
+    <view wx:if="{{report.priorities.length}}" class="priority-list">
+      <view wx:for="{{report.priorities}}" wx:key="key" class="priority-row"><view><text>{{index + 1}}. {{item.label}}</text><text>{{item.raw}} · {{item.score}} 分</text></view><text>{{item.target.text}}</text></view>
+    </view>
+    <text wx:else class="good-state">继续保持当前训练节奏与规范测试习惯。</text>
+  </view>
+
+  <view class="card">
+    <text class="section-title">单项评分拆解</text>
+    <view class="detail-head"><text>项目与成绩</text><text>得分</text><text>加权贡献</text></view>
+    <view wx:for="{{report.details}}" wx:key="key" class="detail-row"><view><text>{{item.label}}</text><text>{{item.raw}}</text></view><text>{{item.score}} / 100</text><text>{{item.contributionText}} 分</text></view>
+  </view>
+
+  <view class="card">
+    <text class="section-title">下一档目标</text>
+    <view wx:for="{{report.details}}" wx:key="key" class="target-row"><view><text>{{item.label}}</text><text>{{item.score}} 分</text></view><text class="target-copy">{{item.target.text}}</text></view>
+  </view>
+
+  <view class="notice"><text>说明：本报告仅基于用户自行输入的成绩进行规则估算，不构成医疗、训练或升学建议。正式结果以学校或区级统测记录为准。</text><button class="contact" open-type="contact" session-from="fitness-report-after-sales" bindcontact="contactService">支付或报告问题，联系商家客服</button></view>
+</scroll-view>

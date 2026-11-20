@@ -1,0 +1,7 @@
+<scroll-view class="page" scroll-y>
+  <view class="hero"><text>详细成绩报告服务说明</text><text>下单前请确认当前填写的年级、性别与测试成绩。</text></view>
+  <view class="card"><text class="title">服务内容与价格</text><text>商品：缇杞体测详细成绩报告（单次）</text><text>价格：人民币 1 元</text><text>交付：支付成功并经平台确认后，立即在本次小程序会话中展示报告。</text><text>内容：单项得分、加权贡献、下一评分档目标与本次优先提升项目。</text></view>
+  <view class="card"><text class="title">数据与未成年人提示</text><text>身高、体重和体测成绩仅在当前设备本地计算，不会随订单上传。订单服务仅处理微信用户标识、商品编码、订单号和支付状态。</text><text>如由未满 14 周岁的儿童使用，请监护人阅读本说明并同意后再购买报告。</text></view>
+  <view class="card"><text class="title">售后与退款</text><text>支付成功但未解锁时，请使用下方商家客服入口并提供订单时间，以便核查处理。退款及争议处理遵循微信平台规则和适用法律；iOS 虚拟支付订单请按 App Store 的退款流程申请。</text><button class="contact" open-type="contact" session-from="fitness-report-service">联系商家客服</button></view>
+  <view class="card"><text class="title">使用边界</text><text>报告仅基于用户自行输入的数据进行成绩估算，不构成医疗诊断、训练方案或升学承诺。学校或区级统测记录为正式依据。</text></view>
+</scroll-view>

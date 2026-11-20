@@ -2,8 +2,8 @@
   <view class="hero">
     <image class="avatar" src="{{avatar}}" mode="aspectFill" />
     <view class="hero-copy">
-      <text class="eyebrow">BEIJING FITNESS</text>
-      <text class="title">北京体测成绩助手</text>
+      <text class="eyebrow">TIQI FITNESS</text>
+      <text class="title">缇杞体测</text>
       <text class="intro">{{appIntro}}</text>
     </view>
   </view>
@@ -50,8 +50,8 @@
     <view class="result-top"><text class="result-kicker">体测统测成绩</text><view class="score-line"><text>{{result.complete ? result.converted : '—'}}</text><text>/ 10 分</text></view><text>{{result.complete ? result.category : '完成所有必测项目后自动计算'}}</text></view>
     <view wx:if="{{result.complete}}" class="result-body">
       <view class="stats"><view><text>国标标准分</text><text class="stat-number">{{result.standardText}}</text><text class="stat-hint">/ 100 分</text></view><view><text>附加分</text><text class="stat-number">{{result.bonusText}}</text><text class="stat-hint">/ 20 分</text></view><view><text>国标测试总分</text><text class="stat-number">{{result.nationalText}}</text><text class="stat-hint">/ 120 分</text></view><view wx:if="{{result.hasProcess}}"><text>八年级过程考核</text><text class="stat-number">{{result.processText}}</text><text class="stat-hint">/ 20 分</text></view></view>
-      <view wx:if="{{reportUnlocked}}" class="detail-list"><text class="detail-title">单项得分与加权贡献</text><view wx:for="{{result.detailItems}}" wx:key="key" class="detail-row"><text>{{item.label}} · {{item.raw}}</text><text>{{item.score}} / 100</text><text>{{item.contributionText}} 分</text></view></view>
-      <view wx:else class="report-gate"><text class="gate-title">解锁完整成绩报告</text><text class="gate-copy">含每项得分、加权贡献与提升重点。每份报告 ¥1。</text><button class="pay-button" loading="{{loadingPayment}}" bindtap="unlockReport">{{paymentEnabled ? '支付 ¥1 解锁' : '报告服务准备中'}}</button></view>
+      <view wx:if="{{reportUnlocked}}" class="report-ready"><view><text class="gate-title">详细成绩报告已解锁</text><text class="gate-copy">查看单项得分、加权贡献与下一档目标。</text></view><button class="report-link" bindtap="openDetailedReport">查看报告</button></view>
+      <view wx:else class="report-gate"><text class="gate-title">详细成绩报告</text><text class="gate-copy">含每项得分、加权贡献与提升重点。本次报告 ¥1。</text><view class="report-benefits"><text>• 单项评分与权重拆解</text><text>• 下一评分档目标</text><text>• 本次优先提升项目</text></view><view class="terms-line" bindtap="toggleTerms"><view class="checkbox {{termsAccepted ? 'checked' : ''}}">{{termsAccepted ? '✓' : ''}}</view><text>我已阅读并同意</text><text class="terms-link" catchtap="openServiceTerms">《服务说明》</text></view><button class="pay-button" loading="{{loadingPayment}}" disabled="{{loadingPayment || !termsAccepted}}" bindtap="unlockReport">{{paymentEnabled ? (pendingOrderNo ? '确认报告状态' : '支付 ¥1 查看详细报告') : '支付服务准备中'}}</button></view>
     </view>
   </view>
 
