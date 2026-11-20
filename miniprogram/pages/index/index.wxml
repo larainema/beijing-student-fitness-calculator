@@ -55,5 +55,6 @@
     </view>
   </view>
 
+  <navigator class="orders-entry" url="/pages/orders/index">订单中心 <text>›</text></navigator>
   <view class="footer">仅供个人估算，正式成绩以学校或区级统测记录为准。</view>
 </scroll-view>
